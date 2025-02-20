@@ -7,7 +7,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Textarea } from "@/components/ui/textarea";
-import { Checkbox } from "@/components/ui/checkbox";
 
 const steps = [
   {
@@ -18,48 +17,67 @@ const steps = [
       { id: "symbol", label: "DAO Symbol", type: "input" },
       { id: "purpose", label: "DAO Purpose", type: "textarea" },
       { id: "description", label: "DAO Description", type: "textarea" },
-    ]
+    ],
   },
   {
     id: "addresses",
     title: "Token & Addresses",
     fields: [
-      { id: "hasExistingToken", label: "Do you have an existing ERC20 token?", type: "radio",
+      {
+        id: "hasExistingToken",
+        label: "Do you have an existing ERC20 token?",
+        type: "radio",
         options: [
           { value: "yes", label: "Yes" },
-          { value: "no", label: "No" }
-        ]
+          { value: "no", label: "No" },
+        ],
       },
-      { id: "tokenAddress", label: "Token Contract Address (if existing)", type: "input",
-        condition: (data) => data.hasExistingToken === "yes"
+      {
+        id: "tokenAddress",
+        label: "Token Contract Address (if existing)",
+        type: "input",
+        condition: (data) => data.hasExistingToken === "yes",
       },
       { id: "treasuryAddress", label: "Treasury Address", type: "input" },
-      { id: "adminAddress", label: "Admin Address", type: "input" }
-    ]
+      { id: "adminAddress", label: "Admin Address", type: "input" },
+    ],
   },
   {
     id: "governance-details",
     title: "Governance details",
     fields: [
-      { id: "governance", label: "Governance Structure", type: "radio", 
+      {
+        id: "governance",
+        label: "Governance Structure",
+        type: "radio",
         options: [
           { value: "flat", label: "Flat (Equal voting power)" },
-          { value: "weighted", label: "Weighted (Based on token holdings)" }
-        ]
+          { value: "weighted", label: "Weighted (Based on token holdings)" },
+        ],
       },
-      { id: "voting", label: "Voting Mechanism", type: "radio",
+      {
+        id: "voting",
+        label: "Voting Mechanism",
+        type: "radio",
         options: [
           { value: "simple-majority", label: "Simple Majority" },
           { value: "super-majority", label: "Super Majority (e.g., 66%)" },
-          { value: "consensus", label: "Consensus" }
-        ]
-      }
-    ]
-  }
+          { value: "consensus", label: "Consensus" },
+        ],
+      },
+    ],
+  },
 ];
 
 export default function CreateDAO() {
   const [currentStep, setCurrentStep] = useState(0);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [contractResult, setContractResult] = useState<{
+    address?: string;
+    txHash?: string;
+    abi?: any;
+    error?: string;
+  } | null>(null);
   const [formData, setFormData] = useState({
     name: "",
     symbol: "",
@@ -83,7 +101,10 @@ export default function CreateDAO() {
     setFormData({ ...formData, [name]: value });
   };
 
-  const handleNext = () => {
+  const handleNext = (e: React.FormEvent) => {
+    e.preventDefault();
+    console.log(currentStep < steps.length - 1, currentStep, steps.length);
+
     if (currentStep < steps.length - 1) {
       setCurrentStep(currentStep + 1);
     }
@@ -95,10 +116,49 @@ export default function CreateDAO() {
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("DAO Creation Data:", formData);
-    alert("DAO created successfully!");
+    setIsSubmitting(true);
+    setContractResult(null);
+
+    try {
+      // Make API call to your Node.js backend
+      const response = await fetch(
+        "http://localhost:3001/api/contracts/generate?saveToFile=true",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(formData),
+        }
+      );
+
+      console.log(response);
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Failed to create DAO contract");
+      }
+
+      // Parse and store the response data
+      const result = await response.json();
+      setContractResult({
+        address: result.contractAddress,
+        txHash: result.transactionHash,
+        abi: result.abi,
+      });
+
+      console.log("DAO contract deployed successfully:", result);
+    } catch (error) {
+      console.error("Error creating DAO contract:", error);
+      setContractResult({
+        error:
+          error instanceof Error ? error.message : "An unknown error occurred",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const renderField = (field: any) => {
@@ -121,7 +181,7 @@ export default function CreateDAO() {
             />
           </div>
         );
-      
+
       case "textarea":
         return (
           <div key={field.id} className="space-y-2">
@@ -136,7 +196,7 @@ export default function CreateDAO() {
             />
           </div>
         );
-      
+
       case "radio":
         return (
           <div key={field.id} className="space-y-2">
@@ -148,14 +208,19 @@ export default function CreateDAO() {
             >
               {field.options.map((option: any) => (
                 <div key={option.value} className="flex items-center space-x-2">
-                  <RadioGroupItem value={option.value} id={`${field.id}-${option.value}`} />
-                  <Label htmlFor={`${field.id}-${option.value}`}>{option.label}</Label>
+                  <RadioGroupItem
+                    value={option.value}
+                    id={`${field.id}-${option.value}`}
+                  />
+                  <Label htmlFor={`${field.id}-${option.value}`}>
+                    {option.label}
+                  </Label>
                 </div>
               ))}
             </RadioGroup>
           </div>
         );
-      
+
       default:
         return null;
     }
@@ -164,7 +229,7 @@ export default function CreateDAO() {
   return (
     <div className="container mx-auto max-w-2xl py-8">
       <h1 className="text-3xl font-bold mb-6 text-center">Create Your DAO</h1>
-      
+
       <div className="mb-8">
         <div className="flex justify-between">
           {steps.map((step, index) => (
@@ -187,7 +252,7 @@ export default function CreateDAO() {
         </div>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-6">
+      <form className="space-y-6"  onSubmit={handleSubmit}>
         <div className="space-y-4">
           {steps[currentStep].fields.map((field) => renderField(field))}
         </div>
@@ -200,12 +265,14 @@ export default function CreateDAO() {
           >
             Previous
           </Button>
-          {currentStep < steps.length ? (
+          {currentStep < steps.length - 1 ? (
             <Button type="button" onClick={handleNext}>
               Next
             </Button>
           ) : (
-            <Button type="submit">Create DAO</Button>
+            <Button type="submit" disabled={isSubmitting}>
+              {isSubmitting ? "Creating..." : "Create DAO"}
+            </Button>
           )}
         </div>
       </form>
