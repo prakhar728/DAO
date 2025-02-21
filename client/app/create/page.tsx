@@ -264,53 +264,48 @@ export default function CreateDAO() {
   };
 
   const renderContractPreview = () => {
-    console.log("Render contract preview");
+    const contracts = contractResult?.contracts;
     
-    if (generatingPreview) {
-      return (
-        <div className="flex items-center justify-center p-8">
-          <div className="text-center">
-            <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-blue-600 border-r-transparent"></div>
-            <p className="mt-4 text-lg">Generating contract preview...</p>
-          </div>
-        </div>
-      );
-    }
-
-    if (contractResult?.error) {
-      return (
-        <div className="bg-red-50 border border-red-200 rounded-md p-4 mt-4">
-          <h3 className="text-lg font-medium text-red-800">Error generating preview</h3>
-          <p className="mt-2 text-red-700">{contractResult.error}</p>
-          <Button 
-            onClick={generatePreview} 
-            className="mt-4 bg-red-100 text-red-800 hover:bg-red-200"
-          >
-            Try Again
-          </Button>
-        </div>
-      );
-    }
-
-    
-    if (!contractResult?.contracts || Object.keys(contractResult.contracts).length === 0) {      
+    if (!contracts || Object.keys(contracts).length === 0) {
       return (
         <div className="text-center p-8">
-          <p className="text-gray-500">No contract data available</p>
-          <Button onClick={generatePreview} className="mt-4">
+          <p className="text-gray-500">No contract preview available</p>
+          <Button onClick={handleSubmit} className="mt-4">
             Generate Preview
           </Button>
         </div>
       );
     }
-    
-    
-    if (contractResult?.contracts && Object.keys(contractResult.contracts).length !== 0) {
-      console.log("here");
-      generatePreview()
-    }
-  }
   
+    const contractKeys = Object.keys(contracts);
+    
+    return (
+      <div className="mt-4">
+        <Tabs defaultValue={contractKeys[0]} className="w-full">
+          <TabsList className="w-full justify-start">
+            {contractKeys.map((key) => (
+              <TabsTrigger key={key} value={key}>
+                {contracts[key].name}
+              </TabsTrigger>
+            ))}
+          </TabsList>
+          
+          {contractKeys.map((key) => (
+            <TabsContent key={key} value={key}>
+              <div className="bg-gray-50 rounded-md p-4 border">
+                <div className="flex justify-between items-center mb-2">
+                  <h3 className="text-lg font-medium">{contracts[key].name}</h3>
+                </div>
+                <pre className="bg-gray-900 text-gray-100 p-4 rounded-md overflow-auto max-h-[500px] text-sm">
+                  <code>{contracts[key].code}</code>
+                </pre>
+              </div>
+            </TabsContent>
+          ))}
+        </Tabs>
+      </div>
+    );
+  };
 
 
   return (
