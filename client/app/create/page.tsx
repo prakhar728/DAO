@@ -1,12 +1,13 @@
 "use client";
 
 import type React from "react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Textarea } from "@/components/ui/textarea";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const steps = [
   {
@@ -67,6 +68,11 @@ const steps = [
       },
     ],
   },
+  {
+    id: "preview",
+    title: "Preview contract",
+    fields: [],
+  },
 ];
 
 export default function CreateDAO() {
@@ -77,19 +83,34 @@ export default function CreateDAO() {
     txHash?: string;
     abi?: any;
     error?: string;
+    contracts?: {
+      [key: string]: {
+        name: string;
+        code: string;
+      };
+    };
   } | null>(null);
   const [formData, setFormData] = useState({
-    name: "",
-    symbol: "",
-    purpose: "",
-    description: "",
-    governance: "",
-    voting: "",
+    name: "name",
+    symbol: "n",
+    purpose: "p",
+    description: "d",
+    governance: "weighted",
+    voting: "consensus",
     hasExistingToken: "no",
-    tokenAddress: "",
-    treasuryAddress: "",
-    adminAddress: "",
+    tokenAddress: "0x5Fdafb9B8957940400aF0bE8A8031AaBC73d678F",
+    treasuryAddress: "0x5Fdafb9B8957940400aF0bE8A8031AaBC73d678F",
+    adminAddress: "0x5Fdafb9B8957940400aF0bE8A8031AaBC73d678F",
   });
+  const [selectedContract, setSelectedContract] = useState("");
+  const [generatingPreview, setGeneratingPreview] = useState(false);
+
+  useEffect(() => {
+    // If we're on the preview step but don't have contract data yet, generate it
+    if (currentStep === 3 && !contractResult?.contracts && !generatingPreview) {
+      generatePreview();
+    }
+  }, [currentStep]);
 
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -101,28 +122,44 @@ export default function CreateDAO() {
     setFormData({ ...formData, [name]: value });
   };
 
-  const handleNext = (e: React.FormEvent) => {
-    e.preventDefault();
-    console.log(currentStep < steps.length - 1, currentStep, steps.length);
-
+  const handleNext = (e?: React.FormEvent) => {
+    e?.preventDefault();
+    
     if (currentStep < steps.length - 1) {
       setCurrentStep(currentStep + 1);
     }
   };
 
-  const handlePrevious = () => {
+  const handlePrevious = (e: React.FormEvent) => {
+    e.preventDefault();
     if (currentStep > 0) {
       setCurrentStep(currentStep - 1);
+    }
+  };
+
+  const generatePreview = async () => {
+    setGeneratingPreview(true);
+    try {
+      if (contractResult?.contracts && Object.keys(contractResult?.contracts).length > 0) {
+        setSelectedContract(Object.keys(contractResult?.contracts)[0]);
+      }
+    } catch (error) {
+      console.error("Error generating contract preview:", error);
+      setContractResult({
+        error:
+          error instanceof Error ? error.message : "An unknown error occurred",
+      });
+    } finally {
+      setGeneratingPreview(false);
     }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
-    setContractResult(null);
 
     try {
-      // Make API call to your Node.js backend
+      // Make API call to your Node.js backend for actual deployment
       const response = await fetch(
         "http://localhost:3001/api/contracts/generate?saveToFile=true",
         {
@@ -134,8 +171,6 @@ export default function CreateDAO() {
         }
       );
 
-      console.log(response);
-
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.message || "Failed to create DAO contract");
@@ -143,13 +178,15 @@ export default function CreateDAO() {
 
       // Parse and store the response data
       const result = await response.json();
+
+      console.log(result);
+
       setContractResult({
-        address: result.contractAddress,
-        txHash: result.transactionHash,
-        abi: result.abi,
+        contracts: result.contracts,
       });
 
       console.log("DAO contract deployed successfully:", result);
+      handleNext();
     } catch (error) {
       console.error("Error creating DAO contract:", error);
       setContractResult({
@@ -226,6 +263,56 @@ export default function CreateDAO() {
     }
   };
 
+  const renderContractPreview = () => {
+    console.log("Render contract preview");
+    
+    if (generatingPreview) {
+      return (
+        <div className="flex items-center justify-center p-8">
+          <div className="text-center">
+            <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-blue-600 border-r-transparent"></div>
+            <p className="mt-4 text-lg">Generating contract preview...</p>
+          </div>
+        </div>
+      );
+    }
+
+    if (contractResult?.error) {
+      return (
+        <div className="bg-red-50 border border-red-200 rounded-md p-4 mt-4">
+          <h3 className="text-lg font-medium text-red-800">Error generating preview</h3>
+          <p className="mt-2 text-red-700">{contractResult.error}</p>
+          <Button 
+            onClick={generatePreview} 
+            className="mt-4 bg-red-100 text-red-800 hover:bg-red-200"
+          >
+            Try Again
+          </Button>
+        </div>
+      );
+    }
+
+    
+    if (!contractResult?.contracts || Object.keys(contractResult.contracts).length === 0) {      
+      return (
+        <div className="text-center p-8">
+          <p className="text-gray-500">No contract data available</p>
+          <Button onClick={generatePreview} className="mt-4">
+            Generate Preview
+          </Button>
+        </div>
+      );
+    }
+    
+    
+    if (contractResult?.contracts && Object.keys(contractResult.contracts).length !== 0) {
+      console.log("here");
+      generatePreview()
+    }
+  }
+  
+
+
   return (
     <div className="container mx-auto max-w-2xl py-8">
       <h1 className="text-3xl font-bold mb-6 text-center">Create Your DAO</h1>
@@ -252,26 +339,34 @@ export default function CreateDAO() {
         </div>
       </div>
 
-      <form className="space-y-6"  onSubmit={handleSubmit}>
+      <form className="space-y-6">
         <div className="space-y-4">
-          {steps[currentStep].fields.map((field) => renderField(field))}
+          {currentStep === 3
+            ? renderContractPreview()
+            : steps[currentStep].fields.map((field) => renderField(field))}
+          {/* {steps[currentStep].fields.map((field) => renderField(field))} */}
         </div>
 
         <div className="mt-8 flex justify-between">
           <Button
             type="button"
             onClick={handlePrevious}
-            disabled={currentStep === 0}
+            disabled={currentStep === 0 || isSubmitting}
           >
             Previous
           </Button>
-          {currentStep < steps.length - 1 ? (
+
+          {currentStep == steps.length - 2 ? (
+            <Button type="submit" onClick={handleSubmit}>
+              {isSubmitting ? "Fetching preview..." : "Preview Contract"}
+            </Button>
+          ) : currentStep < steps.length - 1 ? (
             <Button type="button" onClick={handleNext}>
               Next
             </Button>
           ) : (
-            <Button type="submit" disabled={isSubmitting}>
-              {isSubmitting ? "Creating..." : "Create DAO"}
+            <Button type="submit" disabled={isSubmitting || generatingPreview}>
+              {isSubmitting ? "Deploying..." : "Deploy Contract"}
             </Button>
           )}
         </div>

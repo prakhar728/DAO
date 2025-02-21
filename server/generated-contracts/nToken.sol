@@ -5,18 +5,18 @@ import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Votes.sol";
 import "@openzeppelin/contracts/access/AccessControl.sol";
 
 /**
- * @title name  Governance Token
- * @dev Governance token for name  DAO
+ * @title name Governance Token
+ * @dev Governance token for name DAO
  */
-contract COOLToken is ERC20Votes, AccessControl {
+contract nToken is ERC20Votes, AccessControl {
     bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
     
     constructor() 
-        ERC20("name  Governance Token", "COOL") 
-        ERC20Permit("name  Governance Token")
+        ERC20("name Governance Token", "n") 
+        ERC20Permit("name Governance Token")
     {
-        _grantRole(DEFAULT_ADMIN_ROLE, 0xafDC6E070d6116F77d12ED33bB12712998383aAb);
-        _grantRole(MINTER_ROLE, 0xafDC6E070d6116F77d12ED33bB12712998383aAb);
+        _grantRole(DEFAULT_ADMIN_ROLE, 0x5Fdafb9B8957940400aF0bE8A8031AaBC73d678F);
+        _grantRole(MINTER_ROLE, 0x5Fdafb9B8957940400aF0bE8A8031AaBC73d678F);
     }
     
     function mint(address to, uint256 amount) external onlyRole(MINTER_ROLE) {

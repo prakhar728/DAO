@@ -10,8 +10,8 @@ import "@openzeppelin/contracts/governance/extensions/GovernorVotesQuorumFractio
 
 /**
  * @title Laxmi Chit Fund Governance
- * @dev DEscription
- * Purpose: Prupose
+ * @dev Description
+ * Purpose: Purpose
  */
 contract LaxmiChitFundGovernance is 
     Governor, 

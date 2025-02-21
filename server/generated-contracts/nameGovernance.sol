@@ -9,9 +9,9 @@ import "@openzeppelin/contracts/governance/extensions/GovernorVotesQuorumFractio
 
 
 /**
- * @title name  Governance
- * @dev Description
- * Purpose: purpose
+ * @title name Governance
+ * @dev d
+ * Purpose: p
  */
 contract nameGovernance is 
     Governor, 
@@ -21,7 +21,7 @@ contract nameGovernance is
     GovernorVotesQuorumFraction {
     
     constructor(IVotes _token)
-        Governor("name  Governance")
+        Governor("name Governance")
         GovernorSettings(1, 19636, 0) // votingDelay, votingPeriod, proposal threshold
         GovernorVotes(_token)
         GovernorVotesQuorumFraction(5)

@@ -59,8 +59,14 @@ export class ContractController {
         success: true,
         message: responseMessage,
         contracts: {
-          governanceToken: result.governanceToken,
-          governanceContract: result.governanceContract
+          contract1: {
+            name: 'token',
+            code: result.governanceToken
+          },
+          contract2: {
+            name: 'governance',
+            code: result.governanceContract
+          }
         },
         ...(result.filePaths && { filePaths: result.filePaths })
       });
