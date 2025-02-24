@@ -34,7 +34,6 @@ export class ContractController {
    */
   public generateContracts = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      // Check validation results
       const errors = validationResult(req);
       if (!errors.isEmpty()) {
         res.status(400).json({ 
@@ -48,7 +47,6 @@ export class ContractController {
       const params: ContractParams = req.body;
       const saveToFile = req.query.saveToFile === 'true';
       
-      // Generate contracts
       const result = this.contractService.generateContracts(params, saveToFile);
       
       const responseMessage = saveToFile && result.filePaths

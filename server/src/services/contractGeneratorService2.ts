@@ -18,16 +18,19 @@ export class ContractGeneratorService {
       governancePath: string;
     };
   }  {
+    // Generate governance token contract
     const governanceToken = this.generateGovernanceToken(params);
     
+    // Generate governance contract
     const governanceContract = this.generateGovernanceContract(params);
+    
 
     const result = {
       governanceToken,
       governanceContract
     };
     
-
+    // Save to files if requested
     if (saveToFile) {
       const filePaths = this.saveContractsToFiles(params, governanceToken, governanceContract);
       return {

@@ -66,6 +66,15 @@ const steps = [
           { value: "consensus", label: "Consensus" },
         ],
       },
+
+      // add more options
+
+      // add setting - Voting Delay (input can be in days, number or hours) convert it to seconds.
+      // add setting - Voting Period (same input range as Volting Delay)
+      // add setting - Proposal Threshold
+      // add setting - Quorum percent
+      // add setting - Proposal Threshold
+      // add setting - Proposal Threshold
     ],
   },
   {
@@ -91,16 +100,16 @@ export default function CreateDAO() {
     };
   } | null>(null);
   const [formData, setFormData] = useState({
-    name: "name",
-    symbol: "n",
-    purpose: "p",
-    description: "d",
+    name: "ProjectName",
+    symbol: "PRJ",
+    purpose: "A decentralized platform for X",
+    description: "ProjectName is a blockchain-based solution designed to revolutionize Y by leveraging Z.",
     governance: "weighted",
-    voting: "consensus",
+    voting: "on-chain consensus",
     hasExistingToken: "no",
-    tokenAddress: "0x5Fdafb9B8957940400aF0bE8A8031AaBC73d678F",
-    treasuryAddress: "0x5Fdafb9B8957940400aF0bE8A8031AaBC73d678F",
-    adminAddress: "0x5Fdafb9B8957940400aF0bE8A8031AaBC73d678F",
+    tokenAddress: "0x0000000000000000000000000000000000000000",
+    treasuryAddress: "0x0000000000000000000000000000000000000000",
+    adminAddress: "0x0000000000000000000000000000000000000000"    
   });
   const [selectedContract, setSelectedContract] = useState("");
   const [generatingPreview, setGeneratingPreview] = useState(false);
@@ -159,7 +168,6 @@ export default function CreateDAO() {
     setIsSubmitting(true);
 
     try {
-      // Make API call to your Node.js backend for actual deployment
       const response = await fetch(
         "http://localhost:3001/api/contracts/generate?saveToFile=true",
         {
@@ -310,7 +318,7 @@ export default function CreateDAO() {
 
   return (
     <div className="container mx-auto max-w-2xl py-8">
-      <h1 className="text-3xl font-bold mb-6 text-center">Create Your DAO</h1>
+      <h1 className="text-3xl font-bold mb-6 text-center">Create Your Governance</h1>
 
       <div className="mb-8">
         <div className="flex justify-between">
