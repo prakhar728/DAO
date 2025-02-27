@@ -7,3 +7,4 @@
 3. Decide what variables will be allowed for governance
 
 
+Went throught this proposal https://www.tally.xyz/gov/uniswap/proposal/77
