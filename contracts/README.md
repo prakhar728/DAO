@@ -51,6 +51,13 @@ Use this command to run the deployment script as well as verify it.
 forge script script/DeployProtocol.s.sol --rpc-url $ARBITRUM_SEPOLIA_RPC_URL --verify --etherscan-api-key $ARBISCAN --broadcast
 ```
 
+4. The Comptroller.sol contract is from Compound finance. 
+To deploy it on Arbtirum we use
+
+```bash
+forge script script/DeployProtocol.s.sol --rpc-url $ARBITRUM_SEPOLIA_RPC_URL --verify --etherscan-api-key $ARBISCAN --broadcast
+```
+
 
 ### DEPLOYMENT SUMMARY
   -------------------
@@ -64,3 +71,13 @@ forge script script/DeployProtocol.s.sol --rpc-url $ARBITRUM_SEPOLIA_RPC_URL --v
 | **Proposal Threshold** | 0                                         |
 | **Quorum Fraction**  | 4%                                          |
 | **Timelock Delay**   | 86400 seconds                               |
+
+
+### Deploymen SUMMARY Comptroller
+
+| Component            | Address                                      |
+|----------------------|--------------------------------------------|
+| **Comp Token** (Governance Token)  | `0x43BafD5F20d1F89d8ACEA7b1FD4Da562fd322935` |
+| **Price Oracle** (Fetches asset prices)  | `0x355d1987566B045a4463511da320EFC3c6C46fad` |
+| **Comptroller Implementation** (Logic contract)  | `0xC7296399DaC40e26Be786721A5311e65D2Ed4021` |
+| **Unitroller (Proxy for Comptroller)**  | `0x1Df974A24e7F9E66458cfD9c55F21b605219d673` |
